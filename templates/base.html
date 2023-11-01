@@ -34,9 +34,9 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarResponsive">
                     <ul class="navbar-nav ms-auto py-4 py-lg-0">
-                        {% for m in menu %}
-                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="{{m|lower}}.html">{{m}}</a></li>
-                        {% endfor %}
+                        {% for item in menu -%}
+                        <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ item.url }}">{{ item.name }}</a></li>
+                        {% endfor -%}
                     </ul>
                 </div>
             </div>
