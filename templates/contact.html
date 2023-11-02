@@ -33,6 +33,9 @@
                             <!-- To make this form functional, sign up at-->
                             <!-- https://startbootstrap.com/solution/contact-forms-->
                             <!-- to get an API token!-->
+                            {% for cat, msg in get_flashed_messages(True) %}
+                                <div class="flash {{cat}}">{{msg}}</div>
+                            {% endfor %}
                             <form id="contactForm" method="POST" action="/contact">
                                 <div class="form-floating">
                                     <input class="form-control" id="name" name="name" type="text" placeholder="Enter your name..." data-sb-validations="required" />
@@ -55,27 +58,26 @@
                                     <label for="message">Message</label>
                                     <div class="invalid-feedback" data-sb-feedback="message:required">A message is required.</div>
                                 </div>
-                                <br />
+                                <br/>
                                 <!-- Submit success message-->
                                 <!---->
                                 <!-- This is what your users will see when the form-->
                                 <!-- has successfully submitted-->
-                                <div class="d-none" id="submitSuccessMessage">
-                                    <div class="text-center mb-3">
-                                        <div class="fw-bolder">Form submission successful!</div>
-                                        To activate this form, sign up at
-                                        <br />
-                                        <a href="https://startbootstrap.com/solution/contact-forms">https://startbootstrap.com/solution/contact-forms</a>
-                                    </div>
-                                </div>
+<!--                                <div class="d-none" id="submitSuccessMessage">-->
+<!--                                    <div class="text-center mb-3">-->
+<!--                                        <div class="fw-bolder">Form submission successful!</div>-->
+<!--                                        To activate this form, sign up at-->
+<!--                                        <br />-->
+<!--                                        <a href="https://startbootstrap.com/solution/contact-forms">https://startbootstrap.com/solution/contact-forms</a>-->
+<!--                                    </div>-->
+<!--                                </div>-->
                                 <!-- Submit error message-->
                                 <!---->
                                 <!-- This is what your users will see when there is-->
                                 <!-- an error submitting the form-->
-                                <div class="d-none" id="submitErrorMessage"><div class="text-center text-danger mb-3">Error sending message!</div></div>
-<!--                                 Submit Button-->
+<!--                                <div class="d-none" id="submitErrorMessage"><div class="text-center text-danger mb-3">Error sending message!</div></div>-->
+                                <!-- Submit Button-->
                                 <button class="btn btn-primary text-uppercase" id="submitButton" type="submit">Send</button>
-<!--                                <input type="submit" value="Submit!">-->
                             </form>
                         </div>
                     </div>

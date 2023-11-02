@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, flash
 
 menu = [{'name': 'Home', 'url': '/'},
         {'name': 'About', 'url': 'about'},
@@ -7,9 +7,7 @@ menu = [{'name': 'Home', 'url': '/'},
         ]
 
 app = Flask(__name__)
-
-
-# menu = ['Home', 'About', 'Sample Post', 'Contact']
+app.config['SECRET_KEY'] = 'thisis11asecretkey000'
 
 
 @app.route('/')
@@ -25,8 +23,18 @@ def about():
 @app.route('/contact', methods=['POST', 'GET'])
 def contact():
     if request.method == 'POST':
-        print(request.form)
+        if len(request.form['name']) > 2:
+            flash('Form submission successful! Yahooo', category='success')
+        else:
+            flash('Error sending message! Idiot!', category='error')
+
     return render_template('contact.html', menu=menu, title='Contact the internet')
+
+
+# Error handling for wrong url address
+@app.errorhandler(404)
+def pageNotFound(error):
+    return render_template('page404.html', title='Page not found', menu=menu), 404
 
 
 if __name__ == '__main__':

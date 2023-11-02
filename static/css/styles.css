@@ -10796,3 +10796,14 @@ header.masthead .post-heading .meta a {
     font-size: 2.25rem;
   }
 }
+
+.flash {padding: 10px;}
+.flash.success {
+    border: 1px solid #21DB56;
+    background: #AEFFC5;
+}
+.flash.error {
+    border: 1px solid #FF4343;
+    background: #FF9C9C;
+}
+
