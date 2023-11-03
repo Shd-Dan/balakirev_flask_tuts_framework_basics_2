@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, flash
+from flask import Flask, render_template, request, flash, session, redirect, url_for, abort
 
 menu = [{'name': 'Home', 'url': '/'},
         {'name': 'About', 'url': 'about'},
@@ -29,6 +29,27 @@ def contact():
             flash('Error sending message! Idiot!', category='error')
 
     return render_template('contact.html', menu=menu, title='Contact the internet')
+
+
+# Profile set up
+@app.route('/profile/<username>')
+def profile(username):
+    if 'userLogged' not in session or session['userLogged'] != username:
+        abort(404)
+
+    return f'Profile of {username}'
+
+
+# Route redirection
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    if 'userLogged' in session:
+        return redirect(url_for('profile', username=session['userLogged']))
+    elif request.method == 'POST' and request.form['username'] == 'shd' and request.form['password'] == '223':
+        session['userLogged'] = request.form['username']
+        return redirect(url_for('profile', username=session['userLogged']))
+
+    return render_template('login.html', title='Login', menu=menu)
 
 
 # Error handling for wrong url address
