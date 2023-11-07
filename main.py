@@ -1,13 +1,16 @@
 from flask import Flask, render_template, request, flash, session, redirect, url_for, abort, g
 import sqlite3
 import os
+from FDataBase import FDataBase
 
-menu = [{'name': 'Home', 'url': '/'},
-        {'name': 'About', 'url': 'about'},
-        {'name': 'Post', 'url': 'post'},
-        {'name': 'Contact', 'url': 'contact'}
+'''Dictionary below in beginning used as DB of urls and names for pages'''
+menu = [{'title': 'Home', 'url': '/'},
+        {'title': 'About', 'url': 'about'},
+        {'title': 'Post', 'url': 'post'},
+        {'title': 'Contact', 'url': 'contact'}
         ]
-# Data Base configuration
+
+'''Data-base configuration'''
 DATABASE = '/tmp/main_base.db'
 DEBUG = True
 # SECRET_KEY = 'qrf7wrwer8v22wer2v3ewrv3'
@@ -46,7 +49,9 @@ def get_db():
 @app.route('/')
 def index():
     db = get_db()
-    return render_template('index.html', menu=menu, title='Framework for web-development')
+    data_base = FDataBase(db)
+    # Below, previously we used a dict variable as DB for 'menu', now arguments are taken form data-base (FDataBase)
+    return render_template('index.html', menu=data_base.getMenu(), title='Framework for web-development')
 
 
 @app.route('/about')
@@ -63,6 +68,36 @@ def contact():
             flash('Error sending message! Idiot!', category='error')
 
     return render_template('contact.html', menu=menu, title='Contact the internet')
+
+
+@app.route("/post", methods=['POST', 'GET'])
+def addPost():
+    db = get_db()
+    data_base = FDataBase(db)
+
+    if request.method == 'POST':
+        if len(request.form['name']) > 4 and len(request.form['post']) > 10:
+            result = data_base.addPost(request.form['name'], request.form['post'])
+            if not result:
+                flash("Post adding error", category='error')
+            else:
+                flash("Post added successfully!", category='success')
+        else:
+            flash("Post adding error", category='error')
+
+    return render_template('post.html', menu=data_base.getMenu(), title='Post')
+
+
+# Get posts from DB by ID
+@app.route("/post/<int:id_post>")
+def showPost(id_post):
+    db = get_db()
+    data_base = FDataBase(db)
+    title, post = data_base.getPost(id_post)
+    if not title:
+        abort(404)
+
+
 
 
 # Profile set up
