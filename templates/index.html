@@ -27,14 +27,15 @@
                     {% for post in posts %}
                         <!-- Post preview-->
                         <div class="post-preview">
-                            <a href="{{ url_for('showPost', id_post=post.id) }}">
+                            <!-- Returns on main page the list of posts -->
+                            <a href="{{ url_for('showPost', alias=post.url) }}">
                                 <h2 class="post-title">{{ post.title }}</h2>
-                                <h3 class="post-subtitle">{{ post.text[:50] }}</h3>
+                                <h3 class="post-subtitle">{{ post.text[:50] | striptags}}</h3>
                             </a>
                             <p class="post-meta">
-                                Posted by
-                                <a href="#!">Start Bootstrap</a>
-                                on September 24, 2023
+                                Posted by ShD
+                                <a>Start Bootstrap</a>
+                                {{ post.time }}
                             </p>
                         </div>
                     {% endfor %}

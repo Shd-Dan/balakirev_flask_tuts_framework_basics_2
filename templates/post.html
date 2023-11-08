@@ -34,8 +34,9 @@
                 <div class="col-md-6">
                     <form action="{{ url_for('addPost')}}" method="post">
                         <p><label>Post Name: </label> <input type="text" name="name" value="" required></p>
+                        <p><label>URL of post</label> <input type="text" name="url", value="" required/>
                         <p><label>Text: </label></p>
-                        <p><textarea name="post" rows="7" cols="40"></textarea></p>
+                        <p><textarea name="post" rows="5" cols="30"></textarea></p>
                         <p><input type="submit" value="Add"></p>
                     </form>
                 </div>

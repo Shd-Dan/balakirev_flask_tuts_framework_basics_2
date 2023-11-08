@@ -4,11 +4,11 @@ import os
 from FDataBase import FDataBase
 
 '''Dictionary below in beginning used as DB of urls and names for pages'''
-menu = [{'title': 'Home', 'url': '/'},
-        {'title': 'About', 'url': 'about'},
-        {'title': 'Post', 'url': 'post'},
-        {'title': 'Contact', 'url': 'contact'}
-        ]
+# menu = [{'title': 'Home', 'url': '/'},
+#         {'title': 'About', 'url': 'about'},
+#         {'title': 'Post', 'url': 'post'},
+#         {'title': 'Contact', 'url': 'contact'}
+#         ]
 
 '''Data-base configuration'''
 DATABASE = '/tmp/main_base.db'
@@ -51,23 +51,28 @@ def index():
     db = get_db()
     data_base = FDataBase(db)
     # Below, previously we used a dict variable as DB for 'menu', now arguments are taken form data-base (FDataBase)
-    return render_template('index.html', menu=data_base.getMenu(), title='Framework for web-development')
+    return render_template('index.html', menu=data_base.getMenu(), posts=data_base.getPostsAnnounce(),
+                           title='Framework for web-development')
 
 
 @app.route('/about')
 def about():
-    return render_template('about.html', menu=menu)
+    db = get_db()
+    data_base = FDataBase(db)
+    return render_template('about.html', menu=data_base.getMenu())
 
 
 @app.route('/contact', methods=['POST', 'GET'])
 def contact():
+    db = get_db()
+    data_base = FDataBase(db)
     if request.method == 'POST':
         if len(request.form['name']) > 2:
             flash('Form submission successful! Yahooo', category='success')
         else:
             flash('Error sending message! Idiot!', category='error')
 
-    return render_template('contact.html', menu=menu, title='Contact the internet')
+    return render_template('contact.html', menu=data_base.getMenu(), title='Contact the internet')
 
 
 @app.route("/post", methods=['POST', 'GET'])
@@ -77,7 +82,7 @@ def addPost():
 
     if request.method == 'POST':
         if len(request.form['name']) > 4 and len(request.form['post']) > 10:
-            result = data_base.addPost(request.form['name'], request.form['post'])
+            result = data_base.addPost(request.form['name'], request.form['post'], request.form['url'])
             if not result:
                 flash("Post adding error", category='error')
             else:
@@ -88,16 +93,16 @@ def addPost():
     return render_template('post.html', menu=data_base.getMenu(), title='Post')
 
 
-# Get posts from DB by ID
-@app.route("/post/<int:id_post>")
-def showPost(id_post):
+# Get posts from DB by ID, # id was changed to url
+@app.route("/post/<alias>")
+def showPost(alias):
     db = get_db()
     data_base = FDataBase(db)
-    title, post = data_base.getPost(id_post)
+    title, post = data_base.getPost(alias)
     if not title:
         abort(404)
 
-
+    return render_template('post_id.html', menu=data_base.getMenu(), title=title, post=post)
 
 
 # Profile set up
@@ -118,13 +123,15 @@ def login():
         session['userLogged'] = request.form['username']
         return redirect(url_for('profile', username=session['userLogged']))
 
-    return render_template('login.html', title='Login', menu=menu)
+    return render_template('login.html', title='Login')
 
 
 # Error handling for wrong url address
 @app.errorhandler(404)
 def pageNotFound(error):
-    return render_template('page404.html', title='Page not found', menu=menu), 404
+    db = get_db()
+    data_base = FDataBase(db)
+    return render_template('page404.html', title='Page not found'), 404
 
 
 # Closing connection with database

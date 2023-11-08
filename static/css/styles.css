@@ -10807,3 +10807,12 @@ header.masthead .post-heading .meta a {
     background: #FF9C9C;
 }
 
+.custom-header {
+    background-image: url('/static/assets/img/post-bg.jpg');
+    /* Add any additional background properties or styles here */
+}
+
+
+
+
+
