@@ -46,10 +46,26 @@ def get_db():
     return g.link_db
 
 
-@app.route('/')
-def index():
+# Перехватчик запроса
+data_base = None
+
+
+@app.before_request
+def before_request():
+    global data_base
     db = get_db()
     data_base = FDataBase(db)
+
+
+# Closing connection with database
+@app.teardown_appcontext
+def close_bd(error):
+    if hasattr(g, 'link_db'):
+        g.link_db.close()
+
+
+@app.route('/')
+def index():
     # Below, previously we used a dict variable as DB for 'menu', now arguments are taken form data-base (FDataBase)
     return render_template('index.html', menu=data_base.getMenu(), posts=data_base.getPostsAnnounce(),
                            title='Framework for web-development')
@@ -57,15 +73,11 @@ def index():
 
 @app.route('/about')
 def about():
-    db = get_db()
-    data_base = FDataBase(db)
     return render_template('about.html', menu=data_base.getMenu())
 
 
 @app.route('/contact', methods=['POST', 'GET'])
 def contact():
-    db = get_db()
-    data_base = FDataBase(db)
     if request.method == 'POST':
         if len(request.form['name']) > 2:
             flash('Form submission successful! Yahooo', category='success')
@@ -77,9 +89,6 @@ def contact():
 
 @app.route("/post", methods=['POST', 'GET'])
 def addPost():
-    db = get_db()
-    data_base = FDataBase(db)
-
     if request.method == 'POST':
         if len(request.form['name']) > 4 and len(request.form['post']) > 10:
             result = data_base.addPost(request.form['name'], request.form['post'], request.form['url'])
@@ -96,8 +105,8 @@ def addPost():
 # Get posts from DB by ID, # id was changed to url
 @app.route("/post/<alias>")
 def showPost(alias):
-    db = get_db()
-    data_base = FDataBase(db)
+    # db = get_db()
+    # data_base = FDataBase(db)
     title, post = data_base.getPost(alias)
     if not title:
         abort(404)
@@ -117,13 +126,19 @@ def profile(username):
 # Route redirection
 @app.route('/login', methods=['POST', 'GET'])
 def login():
-    if 'userLogged' in session:
-        return redirect(url_for('profile', username=session['userLogged']))
-    elif request.method == 'POST' and request.form['username'] == 'shd' and request.form['password'] == '223':
-        session['userLogged'] = request.form['username']
-        return redirect(url_for('profile', username=session['userLogged']))
+    # if 'userLogged' in session:
+    #     return redirect(url_for('profile', username=session['userLogged']))
+    # elif request.method == 'POST' and request.form['username'] == 'shd' and request.form['password'] == '223':
+    #     session['userLogged'] = request.form['username']
+    #     return redirect(url_for('profile', username=session['userLogged']))
 
-    return render_template('login.html', title='Login')
+    return render_template('login.html', menu=data_base.getMenu(), title='Login')
+
+
+# Sign-up page
+@app.route('/signup')
+def signup():
+    return render_template('signup.html', menu=data_base.getMenu(), title='Authorization')
 
 
 # Error handling for wrong url address
@@ -132,13 +147,6 @@ def pageNotFound(error):
     db = get_db()
     data_base = FDataBase(db)
     return render_template('page404.html', title='Page not found'), 404
-
-
-# Closing connection with database
-@app.teardown_appcontext
-def close_bd(error):
-    if hasattr(g, 'link_db'):
-        g.link_db.close()
 
 
 if __name__ == '__main__':
