@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, flash, session, redirect, url_for, abort, g
-import sqlite3
 import os
+import sqlite3
+from flask import Flask, render_template, request, flash, session, abort, g, url_for
 from FDataBase import FDataBase
+from werkzeug.security import generate_password_hash, check_password_hash
 
 '''Dictionary below in beginning used as DB of urls and names for pages'''
 # menu = [{'title': 'Home', 'url': '/'},
@@ -138,6 +139,19 @@ def login():
 # Sign-up page
 @app.route('/signup')
 def signup():
+    if request.method == 'POST':
+        if len(request.form['username']) > 4 and len(request.form['email']) > 4 and \
+                len(request.form['password']) > 4 and len(request.form['password']) == len(request.form['psw2']):
+            hash = generate_password_hash(request.form['password'])
+            res = data_base.add_user(request.form['username'], request.form['email'], hash)
+            if res:
+                flash("Authorization successful", "success")
+                return url_for('login')
+            else:
+                flash("Authorization error", "error")
+        else:
+            flash("Please fill in correctly", "error")
+
     return render_template('signup.html', menu=data_base.getMenu(), title='Authorization')
 
 
