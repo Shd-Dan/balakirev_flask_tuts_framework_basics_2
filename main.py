@@ -1,8 +1,11 @@
 import os
 import sqlite3
-from flask import Flask, render_template, request, flash, session, abort, g, url_for
+from flask import Flask, render_template, request, flash, session, abort, g, url_for, redirect
 from FDataBase import FDataBase
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, login_user, login_required
+from UserLogin import UserLogin
+
 
 '''Dictionary below in beginning used as DB of urls and names for pages'''
 # menu = [{'title': 'Home', 'url': '/'},
@@ -22,6 +25,15 @@ app.config.from_object(__name__)
 
 # root_path if there are several apps called
 app.config.update(dict(DATABASE=os.path.join(app.root_path, 'main_base.db')))
+
+login_manager = LoginManager(app)
+
+
+# Decorator creates user data fetch instance, arguments are integer as User_id and object of FDataBase class
+@login_manager.user_loader
+def load_user(user_id):
+    print("Load_user")
+    return UserLogin().from_data_base(user_id, data_base)
 
 
 # function making connection with DB
@@ -105,6 +117,8 @@ def addPost():
 
 # Get posts from DB by ID, # id was changed to url
 @app.route("/post/<alias>")
+# Limits access to posts
+@login_required
 def showPost(alias):
     # db = get_db()
     # data_base = FDataBase(db)
@@ -133,22 +147,35 @@ def login():
     #     session['userLogged'] = request.form['username']
     #     return redirect(url_for('profile', username=session['userLogged']))
 
+    """Login request handling conditions: user data fetched from database"""
+    db = get_db()
+    data_bas = FDataBase(db)
+    if request.method == "POST":
+        user = data_bas.get_user_by_email(request.form['email'])
+        if user and check_password_hash(user['psw'], request.form['password']):
+            user_login = UserLogin().create(user)
+            login_user(user_login)
+            print("logged-in successfully")
+            return redirect(url_for('index'))
+
+        flash("Login or email are not correct", "error")
+
     return render_template('login.html', menu=data_base.getMenu(), title='Login')
 
 
 # Sign-up page
-@app.route('/signup')
+@app.route('/signup', methods=['POST', 'GET'])
 def signup():
     if request.method == 'POST':
         if len(request.form['username']) > 4 and len(request.form['email']) > 4 and \
-                len(request.form['password']) > 4 and len(request.form['password']) == len(request.form['psw2']):
+                len(request.form['password']) > 4 and len(request.form['password']) == len(request.form['password-repeat']):
             hash = generate_password_hash(request.form['password'])
             res = data_base.add_user(request.form['username'], request.form['email'], hash)
             if res:
                 flash("Authorization successful", "success")
-                return url_for('login')
+                return redirect(url_for('login'))
             else:
-                flash("Authorization error", "error")
+                flash("Such user is already registered", "error")
         else:
             flash("Please fill in correctly", "error")
 
@@ -158,8 +185,6 @@ def signup():
 # Error handling for wrong url address
 @app.errorhandler(404)
 def pageNotFound(error):
-    db = get_db()
-    data_base = FDataBase(db)
     return render_template('page404.html', title='Page not found'), 404
 
 

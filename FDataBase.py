@@ -72,3 +72,45 @@ class FDataBase():
             print("Posts getting error" + str(e))
 
         return []
+
+    def add_user(self, name, email, hash_psw):
+        try:
+            self.__cursor.execute(f"SELECT COUNT() as 'count' FROM users WHERE email LIKE '{email}'")
+            result = self.__cursor.fetchone()
+            if result['count'] > 0:
+                print('Email exist')
+                return False
+
+            user_time = math.floor(time.time())
+            self.__cursor.execute("INSERT INTO users VALUES(NULL, ?, ?, ?, ?)", (name, email, hash_psw, user_time))
+            self.__db.commit()
+        except sqlite3.Error as e:
+            print("New user was not added " + str(e))
+            return False
+
+        return True
+
+    # Function is used in UserLogin.py to fetch user data from database.
+    def get_user(self, user_id):
+        try:
+            self.__cursor.execute(f"SELECT * FROM users WHERE ID = {user_id} LIMIT 1")
+            result = self.__cursor.fetchone()
+            if not result:
+                print("User was not found")
+                return False
+
+        except sqlite3.Error as e:
+            print('Error getting data from data-base (FDataBase.py:get_user)' + str(e))
+
+    def get_user_by_email(self, email):
+        try:
+            self.__cursor.execute(f"SELECT * FROM users WHERE email = '{email}' LIMIT 1")
+            result = self.__cursor.fetchone()
+            if not result:
+                print("User was not found (FDataBase.py:get_user_by_email)")
+                return False
+            return result
+
+        except sqlite3.Error as e:
+            print('Error getting data from data-base (FDataBase.py:get_user_by_email)' + str(e))
+        return False
