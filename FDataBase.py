@@ -98,9 +98,12 @@ class FDataBase():
             if not result:
                 print("User was not found")
                 return False
+            return result
 
         except sqlite3.Error as e:
             print('Error getting data from data-base (FDataBase.py:get_user)' + str(e))
+
+        return False
 
     def get_user_by_email(self, email):
         try:

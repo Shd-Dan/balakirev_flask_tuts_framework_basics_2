@@ -3,9 +3,8 @@ import sqlite3
 from flask import Flask, render_template, request, flash, session, abort, g, url_for, redirect
 from FDataBase import FDataBase
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import LoginManager, login_user, login_required
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from UserLogin import UserLogin
-
 
 '''Dictionary below in beginning used as DB of urls and names for pages'''
 # menu = [{'title': 'Home', 'url': '/'},
@@ -27,6 +26,8 @@ app.config.from_object(__name__)
 app.config.update(dict(DATABASE=os.path.join(app.root_path, 'main_base.db')))
 
 login_manager = LoginManager(app)
+# Redirection handler if user is not logged in but visits page where required to be logged in.
+login_manager.login_view = 'login'
 
 
 # Decorator creates user data fetch instance, arguments are integer as User_id and object of FDataBase class
@@ -130,12 +131,12 @@ def showPost(alias):
 
 
 # Profile set up
-@app.route('/profile/<username>')
-def profile(username):
-    if 'userLogged' not in session or session['userLogged'] != username:
-        abort(404)
-
-    return f'Profile of {username}'
+# @app.route('/profile/<username>')
+# def profile(username):
+#     if 'userLogged' not in session or session['userLogged'] != username:
+#         abort(404)
+#
+#     return f'Profile of {username}'
 
 
 # Route redirection
@@ -147,6 +148,10 @@ def login():
     #     session['userLogged'] = request.form['username']
     #     return redirect(url_for('profile', username=session['userLogged']))
 
+    # If user is already logged in then in redirects to profile page
+    if current_user.is_authenticated:
+        return redirect(url_for('profile'))
+
     """Login request handling conditions: user data fetched from database"""
     db = get_db()
     data_bas = FDataBase(db)
@@ -154,9 +159,11 @@ def login():
         user = data_bas.get_user_by_email(request.form['email'])
         if user and check_password_hash(user['psw'], request.form['password']):
             user_login = UserLogin().create(user)
-            login_user(user_login)
-            print("logged-in successfully")
-            return redirect(url_for('index'))
+            remember_me = True if request.form.get('remember') else False
+            login_user(user_login, remember=remember_me)
+            # Redirects to page where authorization where asked, after logging it user backs to this page
+            # in html action must be empty
+            return redirect(request.args.get("next") or url_for("profile"))
 
         flash("Login or email are not correct", "error")
 
@@ -168,7 +175,8 @@ def login():
 def signup():
     if request.method == 'POST':
         if len(request.form['username']) > 4 and len(request.form['email']) > 4 and \
-                len(request.form['password']) > 4 and len(request.form['password']) == len(request.form['password-repeat']):
+                len(request.form['password']) > 4 and len(request.form['password']) == len(
+            request.form['password-repeat']):
             hash = generate_password_hash(request.form['password'])
             res = data_base.add_user(request.form['username'], request.form['email'], hash)
             if res:
@@ -186,6 +194,23 @@ def signup():
 @app.errorhandler(404)
 def pageNotFound(error):
     return render_template('page404.html', title='Page not found'), 404
+
+
+# logout_user() is used from flask_login
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash('You signed out', 'success')
+    return redirect(url_for('login'))
+
+
+# Profile handler, get_id() is used from flask_login
+@app.route("/profile")
+@login_required
+def profile():
+    return f"""<p><a href="{url_for('logout')}">Sign-out</a>
+                <p>Used ID: {current_user.get_id_db()}"""
 
 
 if __name__ == '__main__':

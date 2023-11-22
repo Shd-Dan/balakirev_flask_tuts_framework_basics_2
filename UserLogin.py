@@ -1,4 +1,7 @@
-class UserLogin():
+from flask_login import UserMixin
+
+
+class UserLogin(UserMixin):
     # Responsible for getting user data by creating object UserLogin in decorator .user_loader
     # get_user() located in FDataBase class
     def from_data_base(self, user_id, db):
@@ -11,14 +14,19 @@ class UserLogin():
         self.__user = user
         return self
 
-    def is_authenticated(self):
-        return True
-
-    def is_active(self):
-        return True
-
-    def is_anonymus(self):
-        return False
-
-    def get_id(self):
+    def get_id_db(self):
         return str(self.__user['id'])
+
+"""UserMixin were used instead"""
+
+
+# def is_authenticated(self):
+#     return True
+#
+# def is_active(self):
+#     return True
+#
+# def is_anonymus(self):
+#     return False
+
+
