@@ -82,7 +82,7 @@ class FDataBase():
                 return False
 
             user_time = math.floor(time.time())
-            self.__cursor.execute("INSERT INTO users VALUES(NULL, ?, ?, ?, ?)", (name, email, hash_psw, user_time))
+            self.__cursor.execute("INSERT INTO users VALUES(NULL, ?, ?, ?, NULL, ?)", (name, email, hash_psw, user_time))
             self.__db.commit()
         except sqlite3.Error as e:
             print("New user was not added " + str(e))

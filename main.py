@@ -175,11 +175,11 @@ def login():
 @app.route('/signup', methods=['POST', 'GET'])
 def signup():
     if request.method == 'POST':
-        if len(request.form['username']) > 4 and len(request.form['email']) > 4 and \
-                len(request.form['password']) > 4 and len(request.form['password']) == len(
-            request.form['password-repeat']):
-            hash = generate_password_hash(request.form['password'])
-            res = data_base.add_user(request.form['username'], request.form['email'], hash)
+        if (len(request.form['username']) > 4 and len(request.form['email']) > 4 and
+                len(request.form['password']) > 4 and len(request.form['password'])
+                == len(request.form['password-repeat'])):
+            hashed = generate_password_hash(request.form['password'])
+            res = data_base.add_user(request.form['username'], request.form['email'], hashed)
             if res:
                 flash("Authorization successful", "success")
                 return redirect(url_for('login'))
@@ -211,7 +211,7 @@ def logout():
 @login_required
 def profile():
     return f"""<p><a href="{url_for('logout')}">Sign-out</a>
-                <p>Used ID: {current_user.get_id_db()}"""
+                <p>Used ID: {current_user.get_id()}"""
 
 
 if __name__ == '__main__':

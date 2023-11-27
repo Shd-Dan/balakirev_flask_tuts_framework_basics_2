@@ -17,6 +17,10 @@ class UserLogin(UserMixin):
     def get_id_db(self):
         return str(self.__user['id'])
 
+    # Implement the get_id method as required by Flask-Login
+    def get_id(self):
+        return str(self.__user['id'])
+
 """UserMixin were used instead"""
 
 
