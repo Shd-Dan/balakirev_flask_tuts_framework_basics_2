@@ -17,6 +17,7 @@ from UserLogin import UserLogin
 DATABASE = '/tmp/main_base.db'
 DEBUG = True
 # SECRET_KEY = 'qrf7wrwer8v22wer2v3ewrv3'
+MAX_CONTENT_LENGTH = 1024 * 1024
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'thisis11asecretkey000'
