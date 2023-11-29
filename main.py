@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from flask import Flask, render_template, request, flash, session, abort, g, url_for, redirect
+from flask import Flask, render_template, request, flash, session, abort, g, url_for, redirect, make_response
 from FDataBase import FDataBase
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
@@ -80,6 +80,7 @@ def close_bd(error):
 
 
 @app.route('/')
+@app.route('/index.html')
 def index():
     # Below, previously we used a dict variable as DB for 'menu', now arguments are taken form data-base (FDataBase)
     return render_template('index.html', menu=data_base.getMenu(), posts=data_base.getPostsAnnounce(),
@@ -210,8 +211,19 @@ def logout():
 @app.route("/profile")
 @login_required
 def profile():
-    return f"""<p><a href="{url_for('logout')}">Sign-out</a>
-                <p>Used ID: {current_user.get_id()}"""
+    return render_template("profile.html", menu=data_base.getMenu(), title="Profile")
+    # return 'this is a profile'
+
+@app.route("/userava")
+@login_required
+def userava():
+    img = current_user.get_avatar(app)
+    if not img:
+        return ""
+
+    h = make_response(img)
+    h.headers['Content-Type'] = 'image/png'
+    return h
 
 
 if __name__ == '__main__':
