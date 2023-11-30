@@ -2,7 +2,6 @@ from flask import url_for
 from flask_login import UserMixin
 
 
-
 class UserLogin(UserMixin):
     # Responsible for getting user data by creating object UserLogin in decorator .user_loader
     # get_user() located in FDataBase class
@@ -41,6 +40,13 @@ class UserLogin(UserMixin):
             img = self.__user['avatar']
 
         return img
+
+    def verify_ext(self, filename):
+        extension = filename.rsplit('.', 1)[1]
+        if extension == 'png' or extension == 'PNG':
+            return True
+        else:
+            return False
 
 
 """UserMixin were used instead"""

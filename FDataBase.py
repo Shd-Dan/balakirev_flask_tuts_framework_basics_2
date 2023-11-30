@@ -82,7 +82,8 @@ class FDataBase():
                 return False
 
             user_time = math.floor(time.time())
-            self.__cursor.execute("INSERT INTO users VALUES(NULL, ?, ?, ?, NULL, ?)", (name, email, hash_psw, user_time))
+            self.__cursor.execute("INSERT INTO users VALUES(NULL, ?, ?, ?, NULL, ?)",
+                                  (name, email, hash_psw, user_time))
             self.__db.commit()
         except sqlite3.Error as e:
             print("New user was not added " + str(e))
@@ -117,3 +118,17 @@ class FDataBase():
         except sqlite3.Error as e:
             print('Error getting data from data-base (FDataBase.py:get_user_by_email)' + str(e))
         return False
+
+    def update_user_avatar(self, avatar, user_id):
+        if not avatar:
+            return False
+
+        try:
+            binary = sqlite3.Binary(avatar)  # converts to binary object
+            self.__cursor.execute(f"UPDATE users SET avatar = ? WHERE id = ?", (binary, user_id))
+            self.__db.commit()
+
+        except sqlite3.Error as e:
+            print("Avatar update error" + str(e))
+            return False
+        return True

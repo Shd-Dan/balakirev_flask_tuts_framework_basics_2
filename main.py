@@ -5,6 +5,7 @@ from FDataBase import FDataBase
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from UserLogin import UserLogin
+from forms import LoginForm
 
 '''Dictionary below in beginning used as DB of urls and names for pages'''
 # menu = [{'title': 'Home', 'url': '/'},
@@ -153,15 +154,13 @@ def login():
     # If user is already logged in then in redirects to profile page
     if current_user.is_authenticated:
         return redirect(url_for('profile'))
-
-    """Login request handling conditions: user data fetched from database"""
-    db = get_db()
-    data_bas = FDataBase(db)
-    if request.method == "POST":
-        user = data_bas.get_user_by_email(request.form['email'])
-        if user and check_password_hash(user['psw'], request.form['password']):
+    """WTForms are used for filling HTML attributes"""
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = data_base.get_user_by_email(form.email.data)
+        if user and check_password_hash(user['psw'], form.password.data):
             user_login = UserLogin().create(user)
-            remember_me = True if request.form.get('remember') else False
+            remember_me = form.remember.data
             login_user(user_login, remember=remember_me)
             # Redirects to page where authorization where asked, after logging it user backs to this page
             # in html action must be empty
@@ -169,7 +168,24 @@ def login():
 
         flash("Login or email are not correct", "error")
 
-    return render_template('login.html', menu=data_base.getMenu(), title='Login')
+    return render_template('login.html', menu=data_base.getMenu(), title='Login', form=form)
+
+    """Login request handling conditions: user data fetched from database"""
+    # db = get_db()
+    # data_bas = FDataBase(db)
+    # if request.method == "POST":
+    #     user = data_bas.get_user_by_email(request.form['email'])
+    #     if user and check_password_hash(user['psw'], request.form['password']):
+    #         user_login = UserLogin().create(user)
+    #         remember_me = True if request.form.get('remember') else False
+    #         login_user(user_login, remember=remember_me)
+    #         # Redirects to page where authorization where asked, after logging it user backs to this page
+    #         # in html action must be empty
+    #         return redirect(request.args.get("next") or url_for("profile"))
+    #
+    #     flash("Login or email are not correct", "error")
+    #
+    # return render_template('login.html', menu=data_base.getMenu(), title='Login')
 
 
 # Sign-up page
@@ -214,6 +230,7 @@ def profile():
     return render_template("profile.html", menu=data_base.getMenu(), title="Profile")
     # return 'this is a profile'
 
+
 @app.route("/userava")
 @login_required
 def userava():
@@ -224,6 +241,27 @@ def userava():
     h = make_response(img)
     h.headers['Content-Type'] = 'image/png'
     return h
+
+
+@app.route('/upload', methods=['POST', 'GET'])
+@login_required
+def upload():
+    if request.method == 'POST':  # check if data from DB is returned by POST
+        file = request.files['file']  # corresponds to the name attribute of the file input field in the HTML form.
+        if file and current_user.verify_ext(
+                file.filename):  # function 'verify_extension' checks is file in PNG format. UserLogin
+            try:
+                img = file.read()  # image is read
+                result = data_base.update_user_avatar(img, current_user.get_id())  # loads avatar image to database. FDataBase
+                if not result:
+                    flash('Avatar update error', 'error')
+                flash('Avatar updated', 'success')
+            except FileNotFoundError as e:
+                flash("File reading error", 'error')
+        else:
+            flash('Avatar update error', 'error')
+
+    return redirect(url_for('profile'))
 
 
 if __name__ == '__main__':
