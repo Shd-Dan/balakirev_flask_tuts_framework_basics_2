@@ -1,39 +1,48 @@
 {% extends 'base.html' %}
-{% block head %}
-    {{ super() }}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/login.css') }}">
-{% endblock %}
+    {% block head %}
+        {{ super() }}
+        {% for cat, msg in get_flashed_messages(True) %}
+            <div class="flash {{cat}}">{{msg}}</div>
+        {% endfor %}
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/login.css') }}">
+    {% endblock %}
 
-{% block content %}
-    {{ super() }}
-	<form action="" method="post">
-		{{ form.hidden_tag() }}
-  		<div class="imgcontainer">
-    		<img src="static/assets/img/img_avatar2.png" alt="Avatar" class="avatar">
- 		 </div>
+    {% block content %}
+        {{ super() }}
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <div class="imgcontainer">
+            <img src="static/assets/img/img_avatar2.png" alt="Avatar" class="avatar">
+        </div>
 
-		<div class="container">
-			<!--WTForms usage -->
-			<p>{{ form.email.label() }} {{ form.email() }}</p>
-<!--			<label for="uname"><b>Email</b></label>-->
-<!--			<input type="text" placeholder="Enter email" name="email" required>-->
+        <div class="container">
+            <!--WTForms usage -->
+            {% for field in form if field.name not in ['csrf_token', 'remember', 'submit'] -%}
+            <p>{{ field.label() }}
+                {% if field.errors %}
+                {{ field(class='invalid') }}
+                <span class="invalid-feedback">
+                    {% for e in field.errors %}
+                        {{e}}
+                    {% endfor %}
+                </span>
+                {% else %}
+                    {{ field() }}
+                {% endif %}
+            {% endfor %}
 
-			<p>{{ form.password.label() }} {{ form.password() }}</p>
-<!--			<label for="psw"><b>Password</b></label>-->
-<!--			<input type="password" placeholder="Enter Password" name="password" required>-->
+            <p>{{ form.submit}}</p>
+            <!--			<button type="submit">Login</button>-->
 
-			<p>{{ form.submit}}</p>
-<!--			<button type="submit">Login</button>-->
+            <p>{{ form.remember.label() }} {{ form.remember() }}</p>
+            <!--			<label>-->
+            <!--			  <input type="checkbox" checked="checked" name="remember"> Remember me-->
+            <!--			</label>-->
+        </div>
 
-			<p>{{ form.remember.label() }} {{ form.remember() }}</p>
-<!--			<label>-->
-<!--			  <input type="checkbox" checked="checked" name="remember"> Remember me-->
-<!--			</label>-->
-		</div>
-
-		<div class="container" style="background-color:#f1f1111">
-			<button type="button" class="cancelbtn">Cancel</button>
-			<span class="psw"><a href="{{url_for('signup')}}">Sign-up</a></span>
-		</div>
-		</form>
+        <div class="container">
+            <button type="button" class="cancelbtn">Cancel</button>
+            <span class="psw"><a href="{{url_for('signup')}}">Sign-up</a></span>
+        </div>
+    </form>
 {% endblock %}

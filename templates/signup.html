@@ -1,15 +1,30 @@
 {% extends 'base.html' %}
-{% block head %}
-    {{ super() }}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/signup.css') }}">
-	{% for cat, msg in get_flashed_messages(True) %}
-	<div class="flash {{cat}}">{{msg}}</div>
-	{% endfor %}
-<form action="/signup" method="post" style="background-color: #f0f0f0" class="form-contact">
-	<p><label>Name: </label><input type="text" name="username" value="" required/>
-	<p><label>Email: </label><input type="text" name="email" value="" required/>
-	<p><label>Password: </label><input type="password" name="password" value="" required/>
-	<p><label>Repeat password: </label><input type="password" name="password-repeat" value="" required>
-	<p><input type="submit" value="Sign-up"></p>
-</form>
+	{% block head %}
+		{{ super() }}
+		{% for cat, msg in get_flashed_messages(True) %}
+			<div class="flash {{cat}}">{{msg}}</div>
+		{% endfor %}
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/signup.css') }}">
+	{% endblock %}
+
+	{% block content %}
+    	{{ super() }}
+	<form action="/signup" method="post" style="background-color: #f0f0f0" class="form-contact">
+		{{ form.hidden_tag() }}
+
+		{% for field in form if field.name not in ['csrf_token', 'submit'] -%}
+			<p>{{ field.label() }}
+			{% if field.errors %}
+				{{ field(class="invalid") }}
+			<span class="invalid-feedback">
+				{% for e in field.errors %}
+					{{e}}
+				{% endfor %}
+			</span>
+			{% else %}
+				{{ field() }}
+			{% endif %}
+		{% endfor %}
+		<p>{{ form.submit() }}</p>
+	</form>
 {% endblock %}

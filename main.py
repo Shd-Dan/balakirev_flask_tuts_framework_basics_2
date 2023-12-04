@@ -5,7 +5,8 @@ from FDataBase import FDataBase
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from UserLogin import UserLogin
-from forms import LoginForm
+from forms import LoginForm, SignUpForm
+from admin.admin import admin
 
 '''Dictionary below in beginning used as DB of urls and names for pages'''
 # menu = [{'title': 'Home', 'url': '/'},
@@ -23,6 +24,8 @@ MAX_CONTENT_LENGTH = 1024 * 1024
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'thisis11asecretkey000'
 app.config.from_object(__name__)
+
+app.register_blueprint(admin, url_prefix="/admin")
 
 # root_path if there are several apps called
 app.config.update(dict(DATABASE=os.path.join(app.root_path, 'main_base.db')))
@@ -191,21 +194,18 @@ def login():
 # Sign-up page
 @app.route('/signup', methods=['POST', 'GET'])
 def signup():
-    if request.method == 'POST':
-        if (len(request.form['username']) > 4 and len(request.form['email']) > 4 and
-                len(request.form['password']) > 4 and len(request.form['password'])
-                == len(request.form['password-repeat'])):
-            hashed = generate_password_hash(request.form['password'])
-            res = data_base.add_user(request.form['username'], request.form['email'], hashed)
-            if res:
-                flash("Authorization successful", "success")
-                return redirect(url_for('login'))
-            else:
-                flash("Such user is already registered", "error")
+    """WTForms are used for filling HTML attributes"""
+    form = SignUpForm()
+    if form.validate_on_submit():
+        hashed = generate_password_hash(form.password.data)
+        res = data_base.add_user(form.name.data, form.email.data, hashed)
+        if res:
+            flash("Authorization successful", "success")
+            return redirect(url_for('login'))
         else:
-            flash("Please fill in correctly", "error")
+            flash("Such user is already registered", "error")
 
-    return render_template('signup.html', menu=data_base.getMenu(), title='Authorization')
+    return render_template('signup.html', menu=data_base.getMenu(), title='Authorization', form=form)
 
 
 # Error handling for wrong url address
@@ -252,7 +252,8 @@ def upload():
                 file.filename):  # function 'verify_extension' checks is file in PNG format. UserLogin
             try:
                 img = file.read()  # image is read
-                result = data_base.update_user_avatar(img, current_user.get_id())  # loads avatar image to database. FDataBase
+                result = data_base.update_user_avatar(img,
+                                                      current_user.get_id())  # loads avatar image to database. FDataBase
                 if not result:
                     flash('Avatar update error', 'error')
                 flash('Avatar updated', 'success')
